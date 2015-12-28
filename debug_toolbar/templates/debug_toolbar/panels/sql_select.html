@@ -12,8 +12,12 @@
 			<dd>{{ duration }} ms</dd>
 			<dt>{% trans "Database" %}</dt>
 			<dd>{{ alias }}</dd>
+			{% if result and blacklist %}
+				<dt>{% trans "Count"%}</dt>
+				<dd>{{ result|length }}</dd>
+			{% endif %}
 		</dl>
-		{% if result %}
+		{% if result and not blacklist %}
 		<table class="djSqlSelect">
 			<thead>
 				<tr>
@@ -32,6 +36,8 @@
 				{% endfor %}
 			</tbody>
 		</table>
+		{% elif result and blacklist %}
+			<p>{% trans "Content protected"%}</p>
 		{% else %}
 			<p>{% trans "Empty set" %}</p>
 		{% endif %}

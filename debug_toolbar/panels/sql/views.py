@@ -1,11 +1,12 @@
 from __future__ import absolute_import, unicode_literals
 
+
 from django.http import HttpResponseBadRequest
 from django.shortcuts import render_to_response
 from django.views.decorators.csrf import csrf_exempt
 
 from debug_toolbar.panels.sql.forms import SQLSelectForm
-
+from debug_toolbar.panels.sql.utils import cleanse_result, check_blacklist
 
 @csrf_exempt
 def sql_select(request):
@@ -20,13 +21,17 @@ def sql_select(request):
         headers = [d[0] for d in cursor.description]
         result = cursor.fetchall()
         cursor.close()
+        result = cleanse_result(headers, result)
+        blacklist = check_blacklist(sql)
         context = {
             'result': result,
             'sql': form.reformat_sql(),
             'duration': form.cleaned_data['duration'],
             'headers': headers,
             'alias': form.cleaned_data['alias'],
+            'blacklist': blacklist,
         }
+
         # Using render_to_response avoids running global context processors.
         return render_to_response('debug_toolbar/panels/sql_select.html', context)
     return HttpResponseBadRequest('Form errors')
